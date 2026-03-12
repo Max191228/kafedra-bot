@@ -1,12 +1,15 @@
 meta:
   name: kafedra-vote-bot
-  lang: python
+  toolchain: python
+  version: "3.11"
 
-deploy:
+build:
+  requirements: requirements.txt
+
+run:
   command: python bot.py
-  requirementsPath: requirements.txt
-
-services:
-  - name: bot
-    type: web
-    port: 8080
+  environment:
+    - key: BOT_TOKEN
+      value: "здесь_будет_твой_токен"
+    - key: ADMIN_ID
+      value: "здесь_будет_твой_айди"
