@@ -1,0 +1,12 @@
+meta:
+  name: kafedra-vote-bot
+  lang: python
+
+deploy:
+  command: python bot.py
+  requirementsPath: requirements.txt
+
+services:
+  - name: bot
+    type: web
+    port: 8080
