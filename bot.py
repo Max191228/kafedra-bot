@@ -1,11 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-"""
-Telegram Bot для голосований на кафедре
-Версия для хостинга SpaceWeb (запуск через Cron)
-"""
-
 import os
 import sys
 import json
@@ -23,11 +18,10 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 
 # ==================== НАСТРОЙКА ЛОГИРОВАНИЯ ====================
-# Создаем папку для логов, если её нет
+
 log_dir = Path("logs")
 log_dir.mkdir(exist_ok=True)
 
-# Настраиваем логирование в файл и в консоль
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -39,29 +33,34 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # ==================== ЗАГРУЗКА КОНФИГУРАЦИИ ====================
-# Загружаем переменные окружения из .env файла
+# Загружаем переменные из .env (для локальной разработки)
 load_dotenv()
 
-TOKEN = os.getenv('BOT_TOKEN')
-ADMIN_ID = os.getenv('ADMIN_ID')
+# Приоритет: сначала переменные окружения (Amvera), потом .env файл
+TOKEN = os.environ.get('BOT_TOKEN') or os.getenv('BOT_TOKEN')
+ADMIN_ID = os.environ.get('ADMIN_ID') or os.getenv('ADMIN_ID')
 
-# Проверяем, что токен загружен
+# Проверка токена
 if not TOKEN:
-    logger.error("Токен не найден! Проверьте файл .env")
+    logger.error("Токен не найден! Проверьте переменные окружения (Amvera) или файл .env")
     sys.exit(1)
 
+# Проверка и преобразование ADMIN_ID
 if not ADMIN_ID:
-    logger.error("ADMIN_ID не найден! Проверьте файл .env")
+    logger.error("ADMIN_ID не найден! Проверьте переменные окружения (Amvera) или файл .env")
     sys.exit(1)
 
 try:
     ADMIN_ID = int(ADMIN_ID)
 except ValueError:
-    logger.error("ADMIN_ID должен быть числом!")
+    logger.error(f"ADMIN_ID должен быть числом! Получено: {ADMIN_ID}")
     sys.exit(1)
 
 logger.info(f"Бот запускается. ADMIN_ID: {ADMIN_ID}")
 
+# ==================== ДАЛЬШЕ ИДЕТ ОСНОВНОЙ КОД БОТА ====================
+# Здесь будет весь остальной код (который мы писали раньше)...
+# ... (весь код из предыдущих сообщений)
 # ==================== РАБОТА С ФАЙЛАМИ ====================
 # Используем JSON файлы для хранения данных (вместо оперативной памяти)
 
