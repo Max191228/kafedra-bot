@@ -58,11 +58,7 @@ except ValueError:
 
 logger.info(f"Бот запускается. ADMIN_ID: {ADMIN_ID}")
 
-# ==================== ДАЛЬШЕ ИДЕТ ОСНОВНОЙ КОД БОТА ====================
-# Здесь будет весь остальной код (который мы писали раньше)...
-# ... (весь код из предыдущих сообщений)
 # ==================== РАБОТА С ФАЙЛАМИ ====================
-# Используем JSON файлы для хранения данных (вместо оперативной памяти)
 
 DATA_DIR = Path("data")
 DATA_DIR.mkdir(exist_ok=True)
@@ -388,12 +384,6 @@ async def finish_vote(vote_id):
     total_voted = len(vote_data['voted_users'])
 
     # Определяем результат
-    results = {
-        'За': vote_data['yes'],
-        'Против': vote_data['no'],
-        'Воздержались': vote_data['abstain']
-    }
-
     if vote_data['yes'] > vote_data['no']:
         winner = "✅ РЕШЕНИЕ ПРИНЯТО (победило 'ЗА')"
     elif vote_data['no'] > vote_data['yes']:
@@ -422,73 +412,21 @@ async def finish_vote(vote_id):
     logger.info(f"Голосование {vote_id} завершено")
 
 
-# ==================== ФУНКЦИЯ ДЛЯ ЗАПУСКА ПО РАСПИСАНИЮ ====================
+# ==================== ЗАПУСК БОТА ====================
 
-async def process_updates():
-    """Функция для разовой проверки обновлений (для запуска через Cron)"""
-    try:
-        logger.info("Проверка обновлений...")
-
-        # Получаем обновления
-        updates = await bot.get_updates(
-            offset=0,
-            timeout=2,
-            allowed_updates=dp.resolve_used_update_types()
-        )
-
-        if updates:
-            logger.info(f"Получено {len(updates)} обновлений")
-
-            # Устанавливаем offset, чтобы не обрабатывать повторно
-            last_update_id = updates[-1].update_id
-            await bot.get_updates(offset=last_update_id + 1, timeout=0)
-
-            # Обрабатываем каждое обновление
-            for update in updates:
-                try:
-                    await dp.feed_update(bot, update)
-                except Exception as e:
-                    logger.error(f"Ошибка при обработке обновления: {e}")
-        else:
-            logger.info("Новых обновлений нет")
-
-    except Exception as e:
-        logger.error(f"Критическая ошибка в process_updates: {e}")
-        return 0
-
-    return len(updates) if updates else 0
-
-
-# ==================== ТОЧКА ВХОДА ====================
+async def main():
+    """Постоянный запуск бота для Amvera"""
+    logger.info("Запуск бота в режиме long polling")
+    await dp.start_polling(bot)
 
 if __name__ == "__main__":
     logger.info("=" * 50)
-    logger.info("ЗАПУСК БОТА (режим Cron)")
+    logger.info("ЗАПУСК БОТА (постоянная работа)")
     logger.info("=" * 50)
-
-    # Проверяем, запущен ли уже бот (чтобы не было конфликтов)
-    lock_file = Path("bot.lock")
-    if lock_file.exists():
-        # Проверяем, не слишком ли старый lock-файл
-        lock_time = lock_file.stat().st_mtime
-        from time import time
-
-        if time() - lock_time < 60:  # Если меньше минуты, возможно, другой процесс работает
-            logger.warning("Бот уже запущен в другом процессе. Выход.")
-            sys.exit(0)
-
-    # Создаем lock-файл
-    lock_file.touch()
-
+    
     try:
-        # Запускаем обработку
-        asyncio.run(process_updates())
+        asyncio.run(main())
     except KeyboardInterrupt:
-        logger.info("Бот остановлен пользователем")
+        logger.info("Бот остановлен")
     except Exception as e:
-        logger.error(f"Необработанная ошибка: {e}")
-    finally:
-        # Удаляем lock-файл
-        if lock_file.exists():
-            lock_file.unlink()
-        logger.info("Завершение работы")
+        logger.error(f"Критическая ошибка: {e}")
